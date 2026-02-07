@@ -4,7 +4,6 @@ import os
 
 import librosa
 import torch
-import perth
 import torch.nn.functional as F
 from safetensors.torch import load_file as load_safetensors
 from huggingface_hub import snapshot_download
@@ -16,6 +15,7 @@ from .models.s3gen import S3GEN_SR, S3Gen
 from .models.tokenizers import MTLTokenizer
 from .models.voice_encoder import VoiceEncoder
 from .models.t3.modules.cond_enc import T3Cond
+from .watermark import VoicefyWatermarker
 
 
 REPO_ID = "ResembleAI/chatterbox"
@@ -150,7 +150,7 @@ class ChatterboxMultilingualTTS:
         self.tokenizer = tokenizer
         self.device = device
         self.conds = conds
-        self.watermarker = perth.PerthImplicitWatermarker()
+        self.watermarker = VoicefyWatermarker(enabled=False)
 
     @classmethod
     def get_supported_languages(cls):
@@ -297,5 +297,6 @@ class ChatterboxMultilingualTTS:
                 ref_dict=self.conds.gen,
             )
             wav = wav.squeeze(0).detach().cpu().numpy()
-            watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr)
-        return torch.from_numpy(watermarked_wav).unsqueeze(0)
+            wav = wav.squeeze(0).detach().cpu()
+            wav = self.watermarker.apply(wav, sample_rate=self.sr)
+        return wav.unsqueeze(0)

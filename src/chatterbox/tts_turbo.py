@@ -5,7 +5,6 @@ from pathlib import Path
 
 import librosa
 import torch
-import perth
 import pyloudnorm as ln
 
 from safetensors.torch import load_file
@@ -20,6 +19,7 @@ from .models.voice_encoder import VoiceEncoder
 from .models.t3.modules.cond_enc import T3Cond
 from .models.t3.modules.t3_config import T3Config
 from .models.s3gen.const import S3GEN_SIL
+from .watermark import VoicefyWatermarker
 import logging
 logger = logging.getLogger(__name__)
 
@@ -127,7 +127,7 @@ class ChatterboxTurboTTS:
         self.tokenizer = tokenizer
         self.device = device
         self.conds = conds
-        self.watermarker = perth.PerthImplicitWatermarker()
+        self.watermarker = VoicefyWatermarker(enabled=False)
 
     @classmethod
     def from_local(cls, ckpt_dir, device) -> 'ChatterboxTurboTTS':
@@ -291,6 +291,6 @@ class ChatterboxTurboTTS:
             ref_dict=self.conds.gen,
             n_cfm_timesteps=2,
         )
-        wav = wav.squeeze(0).detach().cpu().numpy()
-        watermarked_wav = self.watermarker.apply_watermark(wav, sample_rate=self.sr)
-        return torch.from_numpy(watermarked_wav).unsqueeze(0)
+        wav = wav.squeeze(0).detach().cpu()
+        wav = self.watermarker.apply(wav, sample_rate=self.sr)
+        return wav.unsqueeze(0)
