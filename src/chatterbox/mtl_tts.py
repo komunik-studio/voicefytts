@@ -238,6 +238,7 @@ class ChatterboxMultilingualTTS:
         self,
         text,
         language_id,
+        preset: str = None,  # NEW: Preset name (natural, energetic, calm, narrator, character)
         audio_prompt_path=None,
         exaggeration=0.5,
         cfg_weight=0.5,
@@ -245,9 +246,21 @@ class ChatterboxMultilingualTTS:
         repetition_penalty=2.0,
         min_p=0.05,
         top_p=1.0,
-        speed: float = 1.0,      # NEW: Speed control (0.5 - 2.0)
-        pitch: float = 0.0,      # NEW: Pitch control (-12 to +12 semitones)
+        speed: float = 1.0,
+        pitch: float = 0.0,
     ):
+        # Apply preset if specified
+        if preset:
+            from .presets import get_preset
+            preset_params = get_preset(preset)
+            
+            # Use preset values as defaults (explicit params override)
+            exaggeration = preset_params.get("exaggeration", exaggeration)
+            cfg_weight = preset_params.get("cfg_weight", cfg_weight)
+            temperature = preset_params.get("temperature", temperature)
+            speed = preset_params.get("speed", speed)
+            pitch = preset_params.get("pitch", pitch)
+        
         # Validate language_id
         if language_id and language_id.lower() not in SUPPORTED_LANGUAGES:
             supported_langs = ", ".join(SUPPORTED_LANGUAGES.keys())

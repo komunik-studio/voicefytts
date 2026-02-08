@@ -98,15 +98,26 @@ wav = model.generate(
 )
 ```
 
-### 🆕 Presets (Phase 5 - Coming Soon)
+### 🆕 Presets (Phase 5)
 
 ```python
-from chatterbox.presets import get_preset
+# Use predefined presets
+wav = model.generate(text, preset="energetic")
 
-# Use preset configurations
-preset = get_preset("energetic")
-wav = model.generate(text, **preset)
+# Override preset parameters
+wav = model.generate(
+    text,
+    preset="calm",   # Base: speed=0.9, pitch=-1.0
+    speed=0.8        # Override: speed=0.8
+)
 ```
+
+**Available Presets:**
+- `natural`: Balanced speech (default)
+- `energetic`: Upbeat, faster, higher pitch
+- `calm`: Relaxed, slower, lower pitch
+- `narrator`: Professional, clear, steady
+- `character`: Expressive, variable
 
 ---
 
@@ -139,7 +150,7 @@ VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox, **plus 20+ ali
 - [x] **Phase 2**: Integrate BigVGAN v2 vocoder
 - [x] **Phase 3**: Tag normalization system
 - [x] **Phase 4**: Speed/Pitch post-processing
-- [ ] **Phase 5**: Generation presets
+- [x] **Phase 5**: Generation presets
 - [ ] **Phase 6**: Fine-tuning toolkit
 - [ ] **Phase 7**: Backend integration (tts-worker)
 - [ ] **Phase 8**: Frontend controls
