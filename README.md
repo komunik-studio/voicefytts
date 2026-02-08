@@ -142,6 +142,37 @@ VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox, **plus 20+ ali
 - Example: `"Hi [laughs]!"` → `"Hi [laugh]!"`
 - Works with all TTS models (standard, turbo, multilingual)
 
+### 🛠️ Fine-Tuning Toolkit (Phase 6)
+
+VoicefyTTS includes a complete toolkit for fine-tuning on custom datasets.
+
+**1. Prepare Dataset (LJSpeech Format):**
+```
+dataset/
+├── wavs/
+│   ├── audio1.wav
+│   └── audio2.wav
+└── metadata.csv  # id|text
+```
+
+**2. Configure Training:**
+Modify `src/chatterbox/training/config.py` or pass args.
+
+**3. Run Training:**
+```python
+from chatterbox.training import train, TrainingConfig
+
+# Load config
+config = TrainingConfig(
+    train_data_path="path/to/dataset",
+    batch_size=4,
+    num_epochs=100
+)
+
+# Start fine-tuning
+train(config)
+```
+
 ---
 
 ## Roadmap
@@ -151,7 +182,7 @@ VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox, **plus 20+ ali
 - [x] **Phase 3**: Tag normalization system
 - [x] **Phase 4**: Speed/Pitch post-processing
 - [x] **Phase 5**: Generation presets
-- [ ] **Phase 6**: Fine-tuning toolkit
+- [x] **Phase 6**: Fine-tuning toolkit
 - [ ] **Phase 7**: Backend integration (tts-worker)
 - [ ] **Phase 8**: Frontend controls
 - [ ] **Phase 9**: Documentation
