@@ -231,16 +231,58 @@ class S3Token2Mel(torch.nn.Module):
 
 class S3Token2Wav(S3Token2Mel):
     """
-    The decoder of S3Gen is a concat of token-to-mel (CFM) and a mel-to-waveform (HiFiGAN) modules.
-
-    TODO: make these modules configurable?
+    The decoder of S3Gen is a concat of token-to-mel (CFM) and a mel-to-waveform vocoder.
+    
+    Supports two vocoders:
+    - BigVGAN v2 (default): NVIDIA's high-quality vocoder (PESQ 4.36+, ~5760 kHz)
+    - HiFi-GAN (fallback): Original vocoder (PESQ 4.0, ~1000 kHz)
+    
+    Args:
+        meanflow: Whether to use meanflow mode
+        vocoder_type: 'bigvgan' or 'hifigan'. Default is 'bigvgan'
+        bigvgan_preset: BigVGAN preset ('quality', 'fast', 'hifi'). Default is 'quality'
+        use_cuda_kernel: Enable CUDA kernels for BigVGAN. Default is True
     """
 
     ignore_state_dict_missing = ("tokenizer._mel_filters", "tokenizer.window")
 
-    def __init__(self, meanflow=False):
+    def __init__(
+        self, 
+        meanflow=False,
+        vocoder_type='bigvgan',
+        bigvgan_preset='quality',
+        use_cuda_kernel=True
+    ):
         super().__init__(meanflow)
+        
+        self.vocoder_type = vocoder_type
 
+        if vocoder_type == 'bigvgan':
+            try:
+                from .bigvgan_vocoder import BigVGANVocoder
+                print(f"[S3Gen] Using BigVGAN v2 vocoder (preset: {bigvgan_preset})")
+                self.mel2wav = BigVGANVocoder(
+                    preset=bigvgan_preset,
+                    use_cuda_kernel=use_cuda_kernel,
+                    device='cuda' if torch.cuda.is_available() else 'cpu'
+                )
+            except (ImportError, Exception) as e:
+                print(f"[S3Gen] BigVGAN not available ({e}), falling back to HiFi-GAN")
+                self.vocoder_type = 'hifigan'
+                self._init_hifigan()
+        else:
+            print("[S3Gen] Using HiFi-GAN vocoder")
+            self._init_hifigan()
+
+        # silence out a few ms and fade audio in to reduce artifacts
+        n_trim = S3GEN_SR // 50  # 20ms = half of a frame
+        trim_fade = torch.zeros(2 * n_trim)
+        trim_fade[n_trim:] = (torch.cos(torch.linspace(torch.pi, 0, n_trim)) + 1) / 2
+        self.register_buffer("trim_fade", trim_fade, persistent=False) # (buffers get automatic device casting)
+        self.estimator_dtype = "fp32"
+    
+    def _init_hifigan(self):
+        """Initialize HiFi-GAN vocoder (fallback)"""
         f0_predictor = ConvRNNF0Predictor()
         self.mel2wav = HiFTGenerator(
             sampling_rate=S3GEN_SR,
@@ -250,13 +292,6 @@ class S3Token2Wav(S3Token2Mel):
             source_resblock_dilation_sizes=[[1, 3, 5], [1, 3, 5], [1, 3, 5]],
             f0_predictor=f0_predictor,
         )
-
-        # silence out a few ms and fade audio in to reduce artifacts
-        n_trim = S3GEN_SR // 50  # 20ms = half of a frame
-        trim_fade = torch.zeros(2 * n_trim)
-        trim_fade[n_trim:] = (torch.cos(torch.linspace(torch.pi, 0, n_trim)) + 1) / 2
-        self.register_buffer("trim_fade", trim_fade, persistent=False) # (buffers get automatic device casting)
-        self.estimator_dtype = "fp32"
 
     def forward(
         self,
@@ -322,9 +357,20 @@ class S3Token2Wav(S3Token2Mel):
 
     @torch.inference_mode()
     def hift_inference(self, speech_feat, cache_source: torch.Tensor = None):
-        if cache_source is None:
-            cache_source = torch.zeros(1, 1, 0).to(device=self.device, dtype=self.dtype)
-        return self.mel2wav.inference(speech_feat=speech_feat, cache_source=cache_source)
+        """
+        Vocoder inference - supports both BigVGAN and HiFi-GAN.
+        
+        BigVGAN: Simple forward pass (mel -> wav)
+        HiFi-GAN: Uses inference() method with cache_source
+        """
+        if self.vocoder_type == 'bigvgan':
+            # BigVGAN: direct forward pass
+            return self.mel2wav(speech_feat), None
+        else:
+            # HiFi-GAN: uses cache_source
+            if cache_source is None:
+                cache_source = torch.zeros(1, 1, 0).to(device=self.device, dtype=self.dtype)
+            return self.mel2wav.inference(speech_feat=speech_feat, cache_source=cache_source)
 
     @torch.inference_mode()
     def inference(

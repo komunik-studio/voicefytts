@@ -17,14 +17,20 @@ VoicefyTTS is a production-ready fork of Chatterbox with the following enhanceme
 | Feature | Original Chatterbox | VoicefyTTS |
 |---------|---------------------|------------|
 | **Watermark** | Perth (Resemble AI) | Voicefy (placeholder, disabled by default) |
-| **Vocoder** | HiFi-GAN | BigVGAN v2 (NVIDIA) - *Coming in Phase 2* |
-| **Speed Control** | ❌ Not available | ✅ 0.5x - 2.0x via post-processing |
-| **Pitch Control** | ❌ Not available | ✅ -12 to +12 semitones |
-| **Presets** | Manual tuning only | ✅ 5 presets (natural, energetic, calm, narrator, character) |
-| **Fine-tuning** | Separate toolkit | ✅ Integrated training scripts |
+| **Vocoder** | HiFi-GAN | ✅ **BigVGAN v2 (NVIDIA)** - 4.36+ PESQ, ~5760 kHz |
+| **Speed Control** | ❌ Not available | ⏳ 0.5x - 2.0x via post-processing *(Phase 4)* |
+| **Pitch Control** | ❌ Not available | ⏳ -12 to +12 semitones *(Phase 4)* |
+| **Presets** | Manual tuning only | ⏳ 5 presets (natural, energetic, calm, narrator, character) *(Phase 5)* |
+| **Fine-tuning** | Separate toolkit | ⏳ Integrated training scripts *(Phase 6)* |
 
-### 🔧 Phase 1 Changes (Current)
+### 🔧 Recent Changes
 
+**Phase 2 (✅ Complete):**
+- **BigVGAN v2 Integration**: NVIDIA's high-quality vocoder (PESQ 4.36+ vs 4.0, ~5760 kHz vs ~1000 kHz)
+- **Vocoder Selection**: Choose between BigVGAN (quality) or HiFi-GAN (fallback)
+- **Auto-fallback**: Gracefully falls back to HiFi-GAN if BigVGAN unavailable
+
+**Phase 1 (✅ Complete):**
 - **Removed Perth Watermark**: Eliminated `resemble-perth` dependency
 - **Added Voicefy Watermark Placeholder**: Disabled by default, ready for future implementation
 - **Clean Audio Output**: No watermarking applied unless explicitly enabled
@@ -55,7 +61,7 @@ pip install -e .
 import torchaudio as ta
 from chatterbox.tts_turbo import ChatterboxTurboTTS
 
-# Load model
+# Load model (uses BigVGAN v2 by default)
 model = ChatterboxTurboTTS.from_pretrained(device="cuda")
 
 # Generate with tags
@@ -63,6 +69,21 @@ text = "Hi there [chuckle], how are you doing today?"
 wav = model.generate(text, audio_prompt_path="reference.wav")
 
 ta.save("output.wav", wav, model.sr)
+```
+
+### 🆕 Vocoder Selection (Phase 2)
+
+```python
+from chatterbox.models.s3gen import S3Token2Wav
+
+# Use BigVGAN v2 (default - best quality)
+s3gen = S3Token2Wav(vocoder_type='bigvgan', bigvgan_preset='quality')
+
+# Use BigVGAN fast preset (faster inference)
+s3gen = S3Token2Wav(vocoder_type='bigvgan', bigvgan_preset='fast')
+
+# Use HiFi-GAN (fallback)
+s3gen = S3Token2Wav(vocoder_type='hifigan')
 ```
 
 ### 🆕 Speed & Pitch Controls (Phase 4 - Coming Soon)

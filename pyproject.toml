@@ -22,7 +22,8 @@ dependencies = [
     "pykakasi==2.3.0",
     "gradio==5.44.1",
     "pyloudnorm",
-    "omegaconf"
+    "omegaconf",
+    "bigvgan>=0.1.0"
 ]
 
 [project.urls]
