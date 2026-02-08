@@ -219,6 +219,8 @@ class ChatterboxTTS:
         exaggeration=0.5,
         cfg_weight=0.5,
         temperature=0.8,
+        speed: float = 1.0,      # NEW: Speed control (0.5 - 2.0)
+        pitch: float = 0.0,      # NEW: Pitch control (-12 to +12 semitones)
     ):
         if audio_prompt_path:
             self.prepare_conditionals(audio_prompt_path, exaggeration=exaggeration)
@@ -273,4 +275,11 @@ class ChatterboxTTS:
             )
             wav = wav.squeeze(0).detach().cpu()
             wav = self.watermarker.apply(wav, sample_rate=self.sr)
+        
+        # Apply audio effects if needed
+        if speed != 1.0 or pitch != 0.0:
+            from .audio_effects import AudioEffects
+            effects = AudioEffects(sample_rate=self.sr)
+            wav = effects.apply_effects(wav, speed=speed, pitch=pitch)
+        
         return wav.unsqueeze(0)

@@ -86,7 +86,7 @@ s3gen = S3Token2Wav(vocoder_type='bigvgan', bigvgan_preset='fast')
 s3gen = S3Token2Wav(vocoder_type='hifigan')
 ```
 
-### 🆕 Speed & Pitch Controls (Phase 4 - Coming Soon)
+### 🆕 Speed & Pitch Controls (Phase 4)
 
 ```python
 # Generate with speed and pitch adjustments
@@ -138,7 +138,7 @@ VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox, **plus 20+ ali
 - [x] **Phase 1**: Remove Perth watermark, add Voicefy placeholder
 - [x] **Phase 2**: Integrate BigVGAN v2 vocoder
 - [x] **Phase 3**: Tag normalization system
-- [ ] **Phase 4**: Speed/Pitch post-processing
+- [x] **Phase 4**: Speed/Pitch post-processing
 - [ ] **Phase 5**: Generation presets
 - [ ] **Phase 6**: Fine-tuning toolkit
 - [ ] **Phase 7**: Backend integration (tts-worker)

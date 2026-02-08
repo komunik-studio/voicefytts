@@ -245,6 +245,8 @@ class ChatterboxMultilingualTTS:
         repetition_penalty=2.0,
         min_p=0.05,
         top_p=1.0,
+        speed: float = 1.0,      # NEW: Speed control (0.5 - 2.0)
+        pitch: float = 0.0,      # NEW: Pitch control (-12 to +12 semitones)
     ):
         # Validate language_id
         if language_id and language_id.lower() not in SUPPORTED_LANGUAGES:
@@ -303,4 +305,11 @@ class ChatterboxMultilingualTTS:
             wav = wav.squeeze(0).detach().cpu().numpy()
             wav = wav.squeeze(0).detach().cpu()
             wav = self.watermarker.apply(wav, sample_rate=self.sr)
+        
+        # Apply audio effects if needed
+        if speed != 1.0 or pitch != 0.0:
+            from .audio_effects import AudioEffects
+            effects = AudioEffects(sample_rate=self.sr)
+            wav = effects.apply_effects(wav, speed=speed, pitch=pitch)
+        
         return wav.unsqueeze(0)
