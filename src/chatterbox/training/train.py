@@ -11,7 +11,7 @@ import logging
 from ..models.t3.t3 import T3
 from ..models.s3gen.s3gen import S3Token2Wav
 from ..models.voice_encoder.voice_encoder import VoiceEncoder
-from ..tokenizers import Tokenizer
+from ..models.tokenizers import EnTokenizer as Tokenizer
 from .config import TrainingConfig
 from .dataset import VoicefyDataset
 from .collate import VoicefyCollator
