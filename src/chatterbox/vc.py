@@ -99,7 +99,6 @@ class ChatterboxVC:
                 speech_tokens=s3_tokens,
                 ref_dict=self.ref_dict,
             )
-            wav = wav.squeeze(0).detach().cpu().numpy()
             wav = wav.squeeze(0).detach().cpu()
             wav = self.watermarker.apply(wav, sample_rate=self.sr)
         return wav.unsqueeze(0)
