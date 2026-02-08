@@ -62,13 +62,13 @@ src/chatterbox/
 ## Installation
 
 ```shell
-pip install git+https://github.com/your-org/voicefytts.git
+pip install git+https://github.com/komunik-studio/voicefytts.git
 ```
 
 Or install from source:
 
 ```shell
-git clone https://github.com/your-org/voicefytts.git
+git clone https://github.com/komunik-studio/voicefytts.git
 cd voicefytts
 pip install -e .
 ```
