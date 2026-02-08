@@ -112,27 +112,32 @@ wav = model.generate(text, **preset)
 
 ## Supported Tags
 
-VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox:
+VoicefyTTS supports the same 9 paralinguistic tags as Chatterbox, **plus 20+ aliases**:
 
-| Tag | Description | Example |
-|-----|-------------|---------|
-| `[laugh]` | Laughter | "That's hilarious [laugh]!" |
-| `[chuckle]` | Light laugh | "Well [chuckle], that's funny" |
-| `[sigh]` | Sigh | "[sigh] What a long day..." |
-| `[gasp]` | Surprise | "[gasp] I can't believe it!" |
-| `[cough]` | Cough | "[cough] Excuse me" |
-| `[clear throat]` | Throat clearing | "[clear throat] Good morning" |
-| `[sniff]` | Sniffing | "[sniff] Thank you..." |
-| `[groan]` | Groan | "[groan] This is difficult" |
-| `[shush]` | Shushing | "[shush] Be quiet!" |
+| Tag | Description | Aliases | Example |
+|-----|-------------|---------|---------|
+| `[laugh]` | Laughter | `[laughs]`, `[laughter]`, `[haha]`, `[hehe]` | "That's hilarious [laugh]!" |
+| `[chuckle]` | Light laugh | `[chuckles]` | "Well [chuckle], that's funny" |
+| `[sigh]` | Sigh | `[sighs]` | "[sigh] What a long day..." |
+| `[gasp]` | Surprise | `[gasps]` | "[gasp] I can't believe it!" |
+| `[cough]` | Cough | `[coughs]`, `[coughing]` | "[cough] Excuse me" |
+| `[clear throat]` | Throat clearing | `[clears throat]`, `[ahem]` | "[clear throat] Good morning" |
+| `[sniff]` | Sniffing | `[sniffs]`, `[sniffing]` | "[sniff] Thank you..." |
+| `[groan]` | Groan | `[groans]`, `[groaning]`, `[ugh]` | "[groan] This is difficult" |
+| `[shush]` | Shushing | `[shh]`, `[shhh]` | "[shush] Be quiet!" |
+
+**Tag Normalization (Phase 3):**
+- Aliases are automatically converted to canonical forms
+- Example: `"Hi [laughs]!"` → `"Hi [laugh]!"`
+- Works with all TTS models (standard, turbo, multilingual)
 
 ---
 
 ## Roadmap
 
 - [x] **Phase 1**: Remove Perth watermark, add Voicefy placeholder
-- [ ] **Phase 2**: Integrate BigVGAN v2 vocoder
-- [ ] **Phase 3**: Tag normalization system
+- [x] **Phase 2**: Integrate BigVGAN v2 vocoder
+- [x] **Phase 3**: Tag normalization system
 - [ ] **Phase 4**: Speed/Pitch post-processing
 - [ ] **Phase 5**: Generation presets
 - [ ] **Phase 6**: Fine-tuning toolkit

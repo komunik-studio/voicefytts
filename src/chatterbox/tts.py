@@ -26,6 +26,10 @@ def punc_norm(text: str) -> str:
     """
     if len(text) == 0:
         return "You need to add some text for me to talk."
+    
+    # Normalize tags FIRST (before other processing)
+    from .tags import normalize_tags
+    text = normalize_tags(text)
 
     # Capitalise first letter
     if text[0].islower():
